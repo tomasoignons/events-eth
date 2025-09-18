@@ -8,4 +8,7 @@ export default defineConfig({
     vue(),
     tailwindcss(),
   ],
+  preview: {
+    allowedHosts: ['food.omont.ch'],
+  },
 })
