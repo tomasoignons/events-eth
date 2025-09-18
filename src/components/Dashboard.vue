@@ -1,73 +1,132 @@
 <template>
-  <div class="dashboard">
-    <div class="dashboard-header">
-      <h1>ETH Events Dashboard</h1>
-      <p class="subtitle">Events in the next 2 weeks</p>
-      <div class="dashboard-stats">
-        <span class="stat">{{ totalFilteredEvents }} events</span>
-        <span class="stat">{{ selectedSources.length }} of {{ Object.keys(allGroupedEvents).length }} sources</span>
-        <button @click="refreshEvents" class="refresh-btn" :disabled="isLoading">
-          {{ isLoading ? 'Loading...' : 'Refresh' }}
-        </button>
+  <div class="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-6">
+    <div class="hero bg-slate-800/90 backdrop-blur-sm rounded-3xl shadow-2xl border border-slate-700/50 mb-8">
+      <div class="hero-content text-center py-16">
+        <div class="max-w-md">
+          <h1 class="text-5xl font-bold text-white tracking-tight bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">ETH & UZH Events Dashboard</h1>
+          <p class="text-xl text-slate-300 font-medium mt-3 mb-8">Events in the next 2 weeks</p>
+          <div class="flex justify-center items-center gap-6 flex-wrap">
+            <div class="badge badge-lg text-lg px-6 py-4 bg-red-600/80 text-white border-red-500">ETH: {{ ethEvents.length }}</div>
+            <div class="badge badge-lg text-lg px-6 py-4 bg-blue-600/80 text-white border-blue-500">UZH: {{ uzhEvents.length }}</div>
+            <div class="badge badge-lg text-lg px-6 py-4 bg-purple-600/80 text-white border-purple-500">Total: {{ totalFilteredEvents }}</div>
+            <button @click="refreshEvents" class="btn btn-primary btn-lg shadow-lg bg-gradient-to-r from-blue-600 to-purple-600 border-none hover:from-blue-700 hover:to-purple-700" :disabled="isLoading">
+              <span v-if="isLoading" class="loading loading-spinner loading-sm"></span>
+              {{ isLoading ? 'Loading...' : 'Refresh' }}
+            </button>
+          </div>
+        </div>
       </div>
     </div>
 
-    <div class="dashboard-content">
-      <div v-if="isLoading" class="loading">
-        <div class="loading-spinner"></div>
-        <p>Loading events...</p>
-      </div>
-
-      <div v-else-if="error" class="error">
-        <div class="error-message">
-          <h3>Unable to load events</h3>
-          <p>{{ error }}</p>
-          <button @click="refreshEvents" class="retry-btn">Try Again</button>
+    <div class="max-w-7xl mx-auto">
+      <div v-if="isLoading" class="card bg-slate-800/90 backdrop-blur-sm shadow-xl border border-slate-700/50">
+        <div class="card-body items-center text-center py-16">
+          <span class="loading loading-ring loading-lg text-blue-400"></span>
+          <p class="text-lg mt-4 text-slate-300">Loading events...</p>
         </div>
       </div>
 
-      <div v-else-if="totalEvents === 0" class="no-events">
-        <div class="no-events-message">
-          <h3>No upcoming events</h3>
-          <p>There are no events scheduled for the next 2 weeks.</p>
+      <div v-else-if="error" class="alert bg-red-900/80 border-red-700 shadow-lg backdrop-blur-sm">
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current flex-shrink-0 h-6 w-6 text-red-400" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+          <div>
+            <h3 class="font-bold text-red-200">Unable to load events</h3>
+            <div class="text-xs text-red-300">{{ error }}</div>
+          </div>
+        </div>
+        <div class="flex-none">
+          <button @click="refreshEvents" class="btn btn-sm bg-red-700 hover:bg-red-600 border-red-600 text-white">Try Again</button>
         </div>
       </div>
 
-      <div v-else class="dashboard-main">
-        <!-- Filter Component -->
-        <EventFilter
-          :available-sources="sourceCounts"
-          :selected-sources="selectedSources"
-          :show-food-only="showFoodOnly"
-          :food-event-count="foodEventCount"
-          @toggle-source="toggleSource"
-          @select-all="selectAllSources"
-          @clear-all="clearAllSources"
-          @toggle-food-filter="toggleFoodFilter"
-        />
+      <div v-else-if="totalEvents === 0" class="card bg-slate-800/90 backdrop-blur-sm shadow-xl border border-slate-700/50">
+        <div class="card-body items-center text-center py-16">
+          <h3 class="card-title text-2xl text-white">No upcoming events</h3>
+          <p class="text-slate-400">There are no events scheduled for the next 2 weeks.</p>
+        </div>
+      </div>
 
-        <!-- Events Display -->
-        <div class="events-display">
-          <div v-if="totalFilteredEvents === 0" class="no-filtered-events">
-            <div class="no-events-message">
-              <h3>No events match your filters</h3>
-              <p>Try selecting different sources or clear all filters.</p>
+      <div v-else class="flex flex-col gap-8">
+        <!-- Food Filter Toggle -->
+        <div class="card bg-slate-800/90 backdrop-blur-sm shadow-xl border border-slate-700/50">
+          <div class="card-body p-6">
+            <div class="bg-gradient-to-r from-orange-900/40 to-yellow-900/30 p-5 rounded-2xl border-2 border-orange-600/50 backdrop-blur-sm">
+              <label class="flex items-center gap-3 cursor-pointer text-lg font-semibold text-white">
+                <input 
+                  type="checkbox" 
+                  :checked="showFoodOnly"
+                  @change="toggleFoodFilter"
+                  class="checkbox border-orange-500 [--chkbg:orange] [--chkfg:white] checkbox-lg"
+                />
+                <span class="text-xl">🍽️</span>
+                <span class="flex-1">Show only events with food/refreshments</span>
+                <div v-if="foodEventCount > 0" class="badge bg-orange-600 border-orange-500 text-white px-3 py-2 text-sm font-semibold">
+                  {{ foodEventCount }} events
+                </div>
+              </label>
             </div>
           </div>
-          
-          <div v-else class="events-timeline">
-            <div class="timeline-header">
-              <h2 class="timeline-title">📅 Upcoming Events</h2>
-              <p class="timeline-subtitle">Sorted chronologically</p>
+        </div>
+
+        <!-- Events Display -->
+        <div class="card bg-slate-800/90 backdrop-blur-sm shadow-2xl border border-slate-700/50">
+          <div class="card-body p-8">
+            <div v-if="totalFilteredEvents === 0" class="text-center py-16">
+              <h3 class="text-2xl font-bold mb-4 text-white">No events match your filters</h3>
+              <p class="text-slate-400">Try toggling the food filter to see more events.</p>
             </div>
             
-            <div class="events-list">
-              <EventCard 
-                v-for="event in chronologicalEvents" 
-                :key="event.id" 
-                :event="event"
-                :show-organizer="true"
-              />
+            <div v-else class="max-w-full mx-auto">
+              <div class="text-center mb-8 pb-6 border-b-4 border-slate-700">
+                <h2 class="text-4xl font-bold text-white tracking-tight mb-2 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">📅 Upcoming Events</h2>
+                <p class="text-lg text-slate-300 font-medium">ETH Zurich & University of Zurich</p>
+              </div>
+              
+              <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
+                <!-- ETH Events Column -->
+                <div class="flex flex-col">
+                  <div class="flex items-center gap-3 mb-6 p-4 bg-red-900/30 rounded-xl border border-red-700/50">
+                    <div class="w-3 h-3 bg-red-500 rounded-full"></div>
+                    <h3 class="text-2xl font-bold text-white">ETH Zurich Events</h3>
+                    <div class="badge bg-red-600 text-white px-3 py-1 ml-auto">{{ ethEvents.length }}</div>
+                  </div>
+                  
+                  <div v-if="ethEvents.length === 0" class="text-center py-12 text-slate-400">
+                    <p>No ETH events found</p>
+                  </div>
+                  
+                  <div v-else class="flex flex-col gap-6 max-h-[80vh] overflow-y-auto pr-2">
+                    <EventCard 
+                      v-for="event in ethEvents" 
+                      :key="`eth-${event.id}`" 
+                      :event="event"
+                      :show-organizer="true"
+                    />
+                  </div>
+                </div>
+
+                <!-- UZH Events Column -->
+                <div class="flex flex-col">
+                  <div class="flex items-center gap-3 mb-6 p-4 bg-blue-900/30 rounded-xl border border-blue-700/50">
+                    <div class="w-3 h-3 bg-blue-500 rounded-full"></div>
+                    <h3 class="text-2xl font-bold text-white">University of Zurich Events</h3>
+                    <div class="badge bg-blue-600 text-white px-3 py-1 ml-auto">{{ uzhEvents.length }}</div>
+                  </div>
+                  
+                  <div v-if="uzhEvents.length === 0" class="text-center py-12 text-slate-400">
+                    <p>No UZH events found</p>
+                  </div>
+                  
+                  <div v-else class="flex flex-col gap-6 max-h-[80vh] overflow-y-auto pr-2">
+                    <EventCard 
+                      v-for="event in uzhEvents" 
+                      :key="`uzh-${event.id}`" 
+                      :event="event"
+                      :show-organizer="true"
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -78,27 +137,22 @@
 
 <script>
 import EventCard from './EventCard.vue'
-import EventFilter from './EventFilter.vue'
 import { 
   fetchEvents, 
   filterEvents, 
   filterEventsWithFood,
-  groupEventsBySource, 
   getNextEventDate 
 } from '../services/eventService.js'
 
 export default {
   name: 'Dashboard',
   components: {
-    EventCard,
-    EventFilter
+    EventCard
   },
   data() {
     return {
       allEvents: [],
       events: [],
-      allGroupedEvents: {},
-      selectedSources: [],
       showFoodOnly: true, // Default to showing only food events
       isLoading: false,
       error: null
@@ -113,36 +167,12 @@ export default {
       const foodEvents = filterEventsWithFood(this.allEvents)
       return foodEvents.length
     },
-    sourceCounts() {
-      const counts = {}
-      for (const [source, events] of Object.entries(this.allGroupedEvents)) {
-        counts[source] = events.length
-      }
-      return counts
-    },
-    filteredGroupedEvents() {
-      const filtered = {}
-      for (const source of this.selectedSources) {
-        if (this.allGroupedEvents[source]) {
-          filtered[source] = this.allGroupedEvents[source]
-        }
-      }
-      return filtered
-    },
     totalFilteredEvents() {
-      return Object.values(this.filteredGroupedEvents).reduce((sum, events) => sum + events.length, 0)
+      return this.events.length
     },
     chronologicalEvents() {
-      // Get all events from filtered sources and sort them chronologically
-      const allFilteredEvents = []
-      for (const source of this.selectedSources) {
-        if (this.allGroupedEvents[source]) {
-          allFilteredEvents.push(...this.allGroupedEvents[source])
-        }
-      }
-      
-      // Sort by next occurrence date
-      return allFilteredEvents.sort((a, b) => {
+      // Sort all events chronologically
+      return this.events.sort((a, b) => {
         const dateA = getNextEventDate(a)
         const dateB = getNextEventDate(b)
         
@@ -152,6 +182,12 @@ export default {
         
         return dateA - dateB
       })
+    },
+    ethEvents() {
+      return this.chronologicalEvents.filter(event => event.source === 'ETH')
+    },
+    uzhEvents() {
+      return this.chronologicalEvents.filter(event => event.source === 'UZH')
     }
   },
   async mounted() {
@@ -177,33 +213,13 @@ export default {
     },
     applyFilters() {
       // Apply both date and food filters
-      const filteredEvents = filterEvents(this.allEvents, {
+      this.events = filterEvents(this.allEvents, {
         next2Weeks: true,
         foodOnly: this.showFoodOnly
       })
-      
-      this.events = filteredEvents
-      this.allGroupedEvents = groupEventsBySource(filteredEvents)
-      
-      // Update selected sources to show all available after filtering
-      this.selectedSources = Object.keys(this.allGroupedEvents)
     },
     async refreshEvents() {
       await this.loadEvents()
-    },
-    toggleSource(source) {
-      const index = this.selectedSources.indexOf(source)
-      if (index > -1) {
-        this.selectedSources.splice(index, 1)
-      } else {
-        this.selectedSources.push(source)
-      }
-    },
-    selectAllSources() {
-      this.selectedSources = Object.keys(this.allGroupedEvents).slice()
-    },
-    clearAllSources() {
-      this.selectedSources = []
     },
     toggleFoodFilter() {
       this.showFoodOnly = !this.showFoodOnly
@@ -213,315 +229,3 @@ export default {
 }
 </script>
 
-<style scoped>
-.dashboard {
-  min-height: 100vh;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-  padding: 24px;
-}
-
-.dashboard-header {
-  text-align: center;
-  margin-bottom: 32px;
-  background: white;
-  padding: 40px;
-  border-radius: 20px;
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
-}
-
-.dashboard-header h1 {
-  margin: 0 0 12px 0;
-  color: #333;
-  font-size: 3.2em;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-}
-
-.subtitle {
-  color: #666;
-  font-size: 1.3em;
-  margin: 0 0 32px 0;
-  font-weight: 500;
-}
-
-.dashboard-stats {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 32px;
-  flex-wrap: wrap;
-}
-
-.stat {
-  background-color: #e3f2fd;
-  color: #1976d2;
-  padding: 12px 24px;
-  border-radius: 24px;
-  font-weight: 600;
-  font-size: 1.1em;
-  box-shadow: 0 2px 8px rgba(25, 118, 210, 0.15);
-}
-
-.refresh-btn {
-  background-color: #0066cc;
-  color: white;
-  border: none;
-  padding: 14px 28px;
-  border-radius: 12px;
-  cursor: pointer;
-  font-weight: 600;
-  font-size: 1.1em;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 16px rgba(0, 102, 204, 0.3);
-}
-
-.refresh-btn:hover:not(:disabled) {
-  background-color: #0052a3;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0, 102, 204, 0.4);
-}
-
-.refresh-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  transform: none;
-}
-
-.dashboard-content {
-  max-width: 1800px;
-  margin: 0 auto;
-}
-
-.dashboard-main {
-  display: flex;
-  flex-direction: column;
-  gap: 32px;
-}
-
-.loading {
-  text-align: center;
-  padding: 60px 20px;
-  background: white;
-  border-radius: 16px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-}
-
-.loading-spinner {
-  width: 40px;
-  height: 40px;
-  border: 4px solid #f3f3f3;
-  border-top: 4px solid #0066cc;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin: 0 auto 16px;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-.error, .no-events {
-  text-align: center;
-  padding: 60px 20px;
-  background: white;
-  border-radius: 16px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-}
-
-.error-message h3, .no-events-message h3 {
-  color: #333;
-  margin: 0 0 16px 0;
-}
-
-.error-message p, .no-events-message p {
-  color: #666;
-  margin: 0 0 24px 0;
-}
-
-.retry-btn {
-  background-color: #dc3545;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 600;
-  transition: background-color 0.2s ease;
-}
-
-.retry-btn:hover {
-  background-color: #c82333;
-}
-
-.events-display {
-  background: white;
-  border-radius: 20px;
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
-  padding: 32px;
-}
-
-.no-filtered-events {
-  text-align: center;
-  padding: 60px 20px;
-}
-
-.events-timeline {
-  max-width: 1000px;
-  margin: 0 auto;
-}
-
-.timeline-header {
-  text-align: center;
-  margin-bottom: 32px;
-  padding-bottom: 24px;
-  border-bottom: 3px solid #f0f0f0;
-}
-
-.timeline-title {
-  margin: 0 0 8px 0;
-  color: #333;
-  font-size: 2.2em;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-}
-
-.timeline-subtitle {
-  margin: 0;
-  color: #666;
-  font-size: 1.1em;
-  font-weight: 500;
-}
-
-.events-list {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
-
-.events-list::-webkit-scrollbar {
-  width: 8px;
-}
-
-.events-list::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 4px;
-}
-
-.events-list::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
-  border-radius: 4px;
-}
-
-.events-list::-webkit-scrollbar-thumb:hover {
-  background: #a1a1a1;
-}
-
-@media (max-width: 1400px) {
-  .events-columns {
-    gap: 24px;
-  }
-  
-  .event-column {
-    flex: 0 0 420px;
-  }
-}
-
-@media (max-width: 1200px) {
-  .events-columns {
-    gap: 20px;
-  }
-  
-  .event-column {
-    flex: 0 0 380px;
-  }
-  
-  .dashboard-content {
-    max-width: 1200px;
-  }
-}
-
-@media (max-width: 768px) {
-  .dashboard {
-    padding: 16px;
-  }
-  
-  .dashboard-header {
-    padding: 32px 20px;
-  }
-  
-  .dashboard-header h1 {
-    font-size: 2.4em;
-  }
-  
-  .subtitle {
-    font-size: 1.1em;
-  }
-  
-  .dashboard-stats {
-    gap: 16px;
-  }
-  
-  .stat {
-    padding: 10px 20px;
-    font-size: 1em;
-  }
-  
-  .refresh-btn {
-    padding: 12px 24px;
-    font-size: 1em;
-  }
-  
-  .events-display {
-    padding: 24px 20px;
-  }
-  
-  .events-timeline {
-    max-width: 100%;
-  }
-  
-  .timeline-header {
-    margin-bottom: 24px;
-    padding-bottom: 20px;
-  }
-  
-  .timeline-title {
-    font-size: 1.8em;
-  }
-  
-  .timeline-subtitle {
-    font-size: 1em;
-  }
-  
-  .events-list {
-    gap: 20px;
-  }
-}
-
-@media (max-width: 480px) {
-  .dashboard {
-    padding: 12px;
-  }
-  
-  .dashboard-header h1 {
-    font-size: 2em;
-  }
-  
-  .dashboard-stats {
-    flex-direction: column;
-    gap: 12px;
-  }
-  
-  .events-display {
-    padding: 20px 16px;
-  }
-  
-  .timeline-title {
-    font-size: 1.6em;
-  }
-  
-  .events-list {
-    gap: 16px;
-  }
-}
-</style>

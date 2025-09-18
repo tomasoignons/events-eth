@@ -1,58 +1,66 @@
 <template>
-  <div class="event-filter">
-    <div class="filter-header">
-      <h3>Event Filters</h3>
-      <div class="filter-actions">
-        <button @click="selectAll" class="action-btn">Select All</button>
-        <button @click="clearAll" class="action-btn">Clear All</button>
+  <div class="card bg-slate-800/90 backdrop-blur-sm shadow-xl border border-slate-700/50">
+    <div class="card-body p-6">
+      <div class="flex justify-between items-center mb-5 pb-4 border-b-2 border-slate-700">
+        <h3 class="card-title text-2xl font-semibold text-white">Event Filters</h3>
+        <div class="flex gap-3">
+          <button @click="selectAll" class="btn btn-outline border-slate-600 text-slate-300 hover:bg-slate-700 btn-sm">Select All</button>
+          <button @click="clearAll" class="btn btn-outline border-slate-600 text-slate-300 hover:bg-slate-700 btn-sm">Clear All</button>
+        </div>
       </div>
-    </div>
-    
-    <!-- Food Filter Toggle -->
-    <div class="special-filters">
-      <div class="food-filter">
-        <label class="food-filter-label">
+      
+      <!-- Food Filter Toggle -->
+      <div class="bg-gradient-to-r from-orange-900/40 to-yellow-900/30 p-5 rounded-2xl border-2 border-orange-600/50 mb-6 backdrop-blur-sm">
+        <label class="flex items-center gap-3 cursor-pointer text-lg font-semibold text-white">
           <input 
             type="checkbox" 
             :checked="showFoodOnly"
             @change="toggleFoodFilter"
-            class="food-checkbox"
+            class="checkbox border-orange-500 [--chkbg:orange] [--chkfg:white] checkbox-lg"
           />
-          <span class="food-icon">🍽️</span>
-          <span class="food-text">Show only events with food/refreshments</span>
-          <span class="food-count" v-if="foodEventCount > 0">({{ foodEventCount }} events)</span>
+          <span class="text-xl">🍽️</span>
+          <span class="flex-1">Show only events with food/refreshments</span>
+          <div v-if="foodEventCount > 0" class="badge bg-orange-600 border-orange-500 text-white px-3 py-2 text-sm font-semibold">
+            {{ foodEventCount }} events
+          </div>
         </label>
       </div>
-    </div>
-    
-    <div class="filter-options">
-      <div 
-        v-for="(count, source) in availableSources" 
-        :key="source"
-        class="filter-option"
-        :class="{ active: selectedSources.includes(source) }"
-        @click="toggleSource(source)"
-      >
-        <div class="option-content">
-          <div class="option-main">
-            <input 
-              type="checkbox" 
-              :checked="selectedSources.includes(source)"
-              @change="toggleSource(source)"
-              class="option-checkbox"
-            />
-            <span class="option-label">{{ source }}</span>
+      
+      <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3 mb-5">
+        <div 
+          v-for="(count, source) in availableSources" 
+          :key="source"
+          class="card bg-slate-700/60 hover:bg-blue-600/80 hover:text-white transition-all duration-200 cursor-pointer border-2 backdrop-blur-sm"
+          :class="selectedSources.includes(source) ? 'bg-blue-600/80 text-white border-blue-500 shadow-lg' : 'border-slate-600/50 hover:border-blue-500'"
+          @click="toggleSource(source)"
+        >
+          <div class="card-body p-4">
+            <div class="flex justify-between items-center">
+              <div class="flex items-center gap-3 flex-1">
+                <input 
+                  type="checkbox" 
+                  :checked="selectedSources.includes(source)"
+                  @change="toggleSource(source)"
+                  class="checkbox border-slate-500 [--chkbg:theme(colors.blue.600)] [--chkfg:white]"
+                  :class="selectedSources.includes(source) ? '[--chkbg:theme(colors.blue.500)]' : '[--chkbg:theme(colors.blue.600)]'"
+                />
+                <span class="font-semibold truncate" :class="selectedSources.includes(source) ? 'text-white' : 'text-slate-300'">{{ source }}</span>
+              </div>
+              <div class="badge text-white px-3 py-1 text-xs font-semibold whitespace-nowrap"
+                   :class="selectedSources.includes(source) ? 'bg-blue-500 border-blue-400' : 'bg-slate-600 border-slate-500'">
+                {{ count }} event{{ count !== 1 ? 's' : '' }}
+              </div>
+            </div>
           </div>
-          <span class="option-count">{{ count }} event{{ count !== 1 ? 's' : '' }}</span>
         </div>
       </div>
-    </div>
-    
-    <div class="filter-summary">
-      <span class="summary-text">
-        Showing {{ totalFilteredEvents }} of {{ totalEvents }} events 
-        from {{ selectedSources.length }} of {{ Object.keys(availableSources).length }} sources
-      </span>
+      
+      <div class="text-center pt-4 border-t-2 border-slate-700">
+        <div class="text-slate-400 font-medium">
+          Showing {{ totalFilteredEvents }} of {{ totalEvents }} events 
+          from {{ selectedSources.length }} of {{ Object.keys(availableSources).length }} sources
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -107,233 +115,3 @@ export default {
 }
 </script>
 
-<style scoped>
-.event-filter {
-  background: white;
-  border-radius: 16px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-  padding: 24px;
-  margin-bottom: 24px;
-}
-
-.filter-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-  padding-bottom: 16px;
-  border-bottom: 2px solid #f0f0f0;
-}
-
-.filter-header h3 {
-  margin: 0;
-  color: #333;
-  font-size: 1.4em;
-  font-weight: 600;
-}
-
-.special-filters {
-  margin-bottom: 24px;
-  padding: 20px;
-  background: linear-gradient(135deg, #fff8e1 0%, #fffbf0 100%);
-  border-radius: 12px;
-  border: 2px solid #ffcc02;
-}
-
-.food-filter-label {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  cursor: pointer;
-  font-size: 1.1em;
-  font-weight: 600;
-  color: #333;
-}
-
-.food-checkbox {
-  width: 20px;
-  height: 20px;
-  accent-color: #ff6b35;
-  cursor: pointer;
-}
-
-.food-icon {
-  font-size: 1.2em;
-}
-
-.food-text {
-  flex: 1;
-}
-
-.food-count {
-  background-color: #ff6b35;
-  color: white;
-  padding: 4px 12px;
-  border-radius: 16px;
-  font-size: 0.9em;
-  font-weight: 600;
-}
-
-.filter-actions {
-  display: flex;
-  gap: 12px;
-}
-
-.action-btn {
-  background-color: #f8f9fa;
-  color: #495057;
-  border: 2px solid #dee2e6;
-  padding: 8px 16px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 500;
-  font-size: 0.9em;
-  transition: all 0.2s ease;
-}
-
-.action-btn:hover {
-  background-color: #e9ecef;
-  border-color: #adb5bd;
-}
-
-.filter-options {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 12px;
-  margin-bottom: 20px;
-}
-
-.filter-option {
-  border: 2px solid #e9ecef;
-  border-radius: 12px;
-  padding: 16px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  background: #f8f9fa;
-}
-
-.filter-option:hover {
-  border-color: #0066cc;
-  background: #f0f8ff;
-}
-
-.filter-option.active {
-  border-color: #0066cc;
-  background: linear-gradient(135deg, #e3f2fd 0%, #f0f8ff 100%);
-  box-shadow: 0 2px 8px rgba(0, 102, 204, 0.15);
-}
-
-.option-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.option-main {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex: 1;
-}
-
-.option-checkbox {
-  width: 20px;
-  height: 20px;
-  accent-color: #0066cc;
-  cursor: pointer;
-}
-
-.option-label {
-  font-weight: 600;
-  color: #333;
-  font-size: 1em;
-}
-
-.option-count {
-  background-color: #0066cc;
-  color: white;
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 0.85em;
-  font-weight: 600;
-  white-space: nowrap;
-}
-
-.filter-option.active .option-count {
-  background-color: #004499;
-}
-
-.filter-summary {
-  padding-top: 16px;
-  border-top: 2px solid #f0f0f0;
-  text-align: center;
-}
-
-.summary-text {
-  color: #666;
-  font-size: 1em;
-  font-weight: 500;
-}
-
-@media (max-width: 768px) {
-  .event-filter {
-    padding: 20px 16px;
-    margin-bottom: 20px;
-  }
-  
-  .filter-header {
-    flex-direction: column;
-    gap: 16px;
-    align-items: stretch;
-    text-align: center;
-  }
-  
-  .filter-actions {
-    justify-content: center;
-  }
-  
-  .special-filters {
-    padding: 16px;
-  }
-  
-  .food-filter-label {
-    flex-direction: column;
-    gap: 8px;
-    text-align: center;
-  }
-  
-  .filter-options {
-    grid-template-columns: 1fr;
-    gap: 10px;
-  }
-  
-  .filter-option {
-    padding: 14px;
-  }
-  
-  .option-content {
-    flex-direction: column;
-    gap: 8px;
-    align-items: stretch;
-  }
-  
-  .option-main {
-    justify-content: center;
-  }
-  
-  .option-count {
-    align-self: center;
-  }
-}
-
-@media (max-width: 480px) {
-  .filter-header h3 {
-    font-size: 1.2em;
-  }
-  
-  .action-btn {
-    padding: 6px 12px;
-    font-size: 0.85em;
-  }
-}
-</style>
