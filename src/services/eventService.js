@@ -5,9 +5,9 @@
 const ETH_API_ENDPOINT = 'https://idapps.ethz.ch/pcm-pub-services/v2/entries?filters[0].min-till-end=0&rs-first=0&rs-size=9999&lang=en&client-id=wcms&filters[0].cals=1&comp-ext=true';
 const UZH_API_ENDPOINT = 'https://www.webroot.uzh.ch/apps/agenda/api/V5/event/';
 // Use the Vite proxy in development, direct URL in production
-const VIS_API_ENDPOINT = import.meta.env.DEV ? '/api/vis/en/events/' : 'https://vis.ethz.ch/en/events/';
-const ESN_API_ENDPOINT = import.meta.env.DEV ? '/api/esn/' : 'https://zurich.esn.ch/';
-const VMP_API_ENDPOINT = import.meta.env.DEV ? '/api/vmp/en/events/alle_events' : 'https://vmp.ethz.ch/en/events/alle_events';
+const VIS_API_ENDPOINT = '/api/vis/en/events/';
+const ESN_API_ENDPOINT = '/api/esn/';
+const VMP_API_ENDPOINT = '/api/vmp/en/events/alle_events';
 
 /**
  * Fetches events from the ETH API
