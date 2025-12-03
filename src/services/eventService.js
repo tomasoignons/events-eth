@@ -406,7 +406,7 @@ export async function fetchEsnEvents() {
     // Fetch each event detail page to get the full information including price
     for (const eventId of eventIds) {
       try {
-        const eventUrl = import.meta.env.DEV ? `/api/esn/event/${eventId}` : `https://zurich.esn.ch/event/${eventId}`;
+        const eventUrl = `/api/esn/event/${eventId}`
         const eventResponse = await fetch(eventUrl);
         console.log(eventResponse)
         if (!eventResponse.ok) continue;
@@ -646,7 +646,7 @@ export async function fetchVmpEvents() {
     // Fetch each event detail page to get the full information
     for (const slug of eventSlugs) {
       try {
-        const eventUrl = import.meta.env.DEV ? `/api/vmp/en/events/${slug}/` : `https://vmp.ethz.ch/en/events/${slug}/`;
+        const eventUrl = `/api/vmp/en/events/${slug}/`;
         const eventResponse = await fetch(eventUrl);
         if (!eventResponse.ok) continue;
         
