@@ -3,11 +3,14 @@
     <div class="hero bg-slate-800/90 backdrop-blur-sm rounded-3xl shadow-2xl border border-slate-700/50 mb-8">
       <div class="hero-content text-center py-16">
         <div class="max-w-md">
-          <h1 class="text-5xl font-bold text-white tracking-tight bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">ETH & UZH Events Dashboard</h1>
+          <h1 class="text-5xl font-bold tracking-tight bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">ETH, UZH, VIS, ESN & VMP Events</h1>
           <p class="text-xl text-slate-300 font-medium mt-3 mb-8">Events in the next 2 weeks</p>
           <div class="flex justify-center items-center gap-6 flex-wrap">
             <div class="badge badge-lg text-lg px-6 py-4 bg-red-600/80 text-white border-red-500">ETH: {{ ethEvents.length }}</div>
             <div class="badge badge-lg text-lg px-6 py-4 bg-blue-600/80 text-white border-blue-500">UZH: {{ uzhEvents.length }}</div>
+            <div class="badge badge-lg text-lg px-6 py-4 bg-green-600/80 text-white border-green-500">VIS: {{ visEvents.length }}</div>
+            <div class="badge badge-lg text-lg px-6 py-4 bg-orange-600/80 text-white border-orange-500">ESN: {{ esnEvents.length }}</div>
+            <div class="badge badge-lg text-lg px-6 py-4 bg-pink-600/80 text-white border-pink-500">VMP: {{ vmpEvents.length }}</div>
             <div class="badge badge-lg text-lg px-6 py-4 bg-purple-600/80 text-white border-purple-500">Total: {{ totalFilteredEvents }}</div>
             <button @click="refreshEvents" class="btn btn-primary btn-lg shadow-lg bg-gradient-to-r from-blue-600 to-purple-600 border-none hover:from-blue-700 hover:to-purple-700" :disabled="isLoading">
               <span v-if="isLoading" class="loading loading-spinner loading-sm"></span>
@@ -18,7 +21,7 @@
       </div>
     </div>
 
-    <div class="max-w-7xl mx-auto">
+    <div class="w-full mx-auto">
       <div v-if="isLoading" class="card bg-slate-800/90 backdrop-blur-sm shadow-xl border border-slate-700/50">
         <div class="card-body items-center text-center py-16">
           <span class="loading loading-ring loading-lg text-blue-400"></span>
@@ -46,7 +49,7 @@
         </div>
       </div>
 
-      <div v-else class="flex flex-col gap-8">
+      <div v-else class="flex flex-col gap-8 ">
         <!-- Food Filter Toggle -->
         <div class="card bg-slate-800/90 backdrop-blur-sm shadow-xl border border-slate-700/50">
           <div class="card-body p-6">
@@ -78,21 +81,21 @@
             
             <div v-else class="max-w-full mx-auto">
               <div class="text-center mb-8 pb-6 border-b-4 border-slate-700">
-                <h2 class="text-4xl font-bold text-white tracking-tight mb-2 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">📅 Upcoming Events</h2>
-                <p class="text-lg text-slate-300 font-medium">ETH Zurich & University of Zurich</p>
+                <h2 class="text-4xl font-bold tracking-tight mb-2 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">📅 Upcoming Events</h2>
+                <p class="text-lg text-slate-300 font-medium">ETH, UZH, VIS, ESN & VMP</p>
               </div>
               
-              <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
                 <!-- ETH Events Column -->
                 <div class="flex flex-col">
                   <div class="flex items-center gap-3 mb-6 p-4 bg-red-900/30 rounded-xl border border-red-700/50">
                     <div class="w-3 h-3 bg-red-500 rounded-full"></div>
-                    <h3 class="text-2xl font-bold text-white">ETH Zurich Events</h3>
-                    <div class="badge bg-red-600 text-white px-3 py-1 ml-auto">{{ ethEvents.length }}</div>
+                    <h3 class="text-xl font-bold text-white">ETH</h3>
+                    <div class="badge bg-red-600 text-white px-2 py-1 ml-auto text-xs">{{ ethEvents.length }}</div>
                   </div>
                   
                   <div v-if="ethEvents.length === 0" class="text-center py-12 text-slate-400">
-                    <p>No ETH events found</p>
+                    <p class="text-sm">No ETH events</p>
                   </div>
                   
                   <div v-else class="flex flex-col gap-6 max-h-[80vh] overflow-y-auto pr-2">
@@ -109,18 +112,84 @@
                 <div class="flex flex-col">
                   <div class="flex items-center gap-3 mb-6 p-4 bg-blue-900/30 rounded-xl border border-blue-700/50">
                     <div class="w-3 h-3 bg-blue-500 rounded-full"></div>
-                    <h3 class="text-2xl font-bold text-white">University of Zurich Events</h3>
-                    <div class="badge bg-blue-600 text-white px-3 py-1 ml-auto">{{ uzhEvents.length }}</div>
+                    <h3 class="text-xl font-bold text-white">UZH</h3>
+                    <div class="badge bg-blue-600 text-white px-2 py-1 ml-auto text-xs">{{ uzhEvents.length }}</div>
                   </div>
                   
                   <div v-if="uzhEvents.length === 0" class="text-center py-12 text-slate-400">
-                    <p>No UZH events found</p>
+                    <p class="text-sm">No UZH events</p>
                   </div>
                   
                   <div v-else class="flex flex-col gap-6 max-h-[80vh] overflow-y-auto pr-2">
                     <EventCard 
                       v-for="event in uzhEvents" 
                       :key="`uzh-${event.id}`" 
+                      :event="event"
+                      :show-organizer="true"
+                    />
+                  </div>
+                </div>
+
+                <!-- VIS Events Column -->
+                <div class="flex flex-col">
+                  <div class="flex items-center gap-3 mb-6 p-4 bg-green-900/30 rounded-xl border border-green-700/50">
+                    <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                    <h3 class="text-xl font-bold text-white">VIS</h3>
+                    <div class="badge bg-green-600 text-white px-2 py-1 ml-auto text-xs">{{ visEvents.length }}</div>
+                  </div>
+                  
+                  <div v-if="visEvents.length === 0" class="text-center py-12 text-slate-400">
+                    <p class="text-sm">No VIS events</p>
+                  </div>
+                  
+                  <div v-else class="flex flex-col gap-6 max-h-[80vh] overflow-y-auto pr-2">
+                    <EventCard 
+                      v-for="event in visEvents" 
+                      :key="`vis-${event.id}`" 
+                      :event="event"
+                      :show-organizer="true"
+                    />
+                  </div>
+                </div>
+
+                <!-- ESN Events Column -->
+                <div class="flex flex-col">
+                  <div class="flex items-center gap-3 mb-6 p-4 bg-orange-900/30 rounded-xl border border-orange-700/50">
+                    <div class="w-3 h-3 bg-orange-500 rounded-full"></div>
+                    <h3 class="text-xl font-bold text-white">ESN</h3>
+                    <div class="badge bg-orange-600 text-white px-2 py-1 ml-auto text-xs">{{ esnEvents.length }}</div>
+                  </div>
+                  
+                  <div v-if="esnEvents.length === 0" class="text-center py-12 text-slate-400">
+                    <p class="text-sm">No ESN events</p>
+                  </div>
+                  
+                  <div v-else class="flex flex-col gap-6 max-h-[80vh] overflow-y-auto pr-2">
+                    <EventCard 
+                      v-for="event in esnEvents" 
+                      :key="`esn-${event.id}`" 
+                      :event="event"
+                      :show-organizer="true"
+                    />
+                  </div>
+                </div>
+
+                <!-- VMP Events Column -->
+                <div class="flex flex-col">
+                  <div class="flex items-center gap-3 mb-6 p-4 bg-pink-900/30 rounded-xl border border-pink-700/50">
+                    <div class="w-3 h-3 bg-pink-500 rounded-full"></div>
+                    <h3 class="text-xl font-bold text-white">VMP</h3>
+                    <div class="badge bg-pink-600 text-white px-2 py-1 ml-auto text-xs">{{ vmpEvents.length }}</div>
+                  </div>
+                  
+                  <div v-if="vmpEvents.length === 0" class="text-center py-12 text-slate-400">
+                    <p class="text-sm">No VMP events</p>
+                  </div>
+                  
+                  <div v-else class="flex flex-col gap-6 max-h-[80vh] overflow-y-auto pr-2">
+                    <EventCard 
+                      v-for="event in vmpEvents" 
+                      :key="`vmp-${event.id}`" 
                       :event="event"
                       :show-organizer="true"
                     />
@@ -188,6 +257,15 @@ export default {
     },
     uzhEvents() {
       return this.chronologicalEvents.filter(event => event.source === 'UZH')
+    },
+    visEvents() {
+      return this.chronologicalEvents.filter(event => event.source === 'VIS')
+    },
+    esnEvents() {
+      return this.chronologicalEvents.filter(event => event.source === 'ESN')
+    },
+    vmpEvents() {
+      return this.chronologicalEvents.filter(event => event.source === 'VMP')
     }
   },
   async mounted() {
